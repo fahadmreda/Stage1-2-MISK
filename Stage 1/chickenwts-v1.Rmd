@@ -1,0 +1,77 @@
+---
+title: "Analysis of ChickWeights "
+author: "Fahad Reda"
+date: "20.10.2020"
+output:
+html_document: default
+
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rio)
+library(knitr)
+library(DT)
+library(Hmisc)
+
+```
+
+*analysis* of the best food for  **Chickens**
+
+```{r output="asis"  ,echo = FALSE}
+library(knitr)
+chickwts %>% 
+  group_by(feed) %>%
+  summarise(n = length(feed),
+            Average = mean(weight), 
+            SD = sd(weight)) %>% kable()
+  
+
+```
+We can  **Check** the plots to have a better understanding 
+
+
+
+**PLOTS**
+
+```{r, echo=FALSE}
+ggplot(chickwts, aes( x = feed, y =  weight )) + 
+  geom_boxplot()
+```
+
+
+the below plot shows the average weight of the chicken while feeding on certain diet 
+
+
+
+```{r, echo = FALSE}
+ggplot(chickwts, aes( feed, weight )) + 
+    geom_jitter( width = 0.15 ) + 
+    stat_summary(fun.data = mean_sdl,
+                 fun.args = list(mult = 1), col = "red")
+```
+
+the increase and decrease of weight for each type of food 
+
+```{r output="asis", echo = FALSE}
+chickwts_lm <- lm(weight ~ feed, data = chickwts)
+chickwts_lm 
+```
+
+```{r}
+The_one_way <- anova(chickwts_lm)
+
+The_one_way
+
+
+```
+Tukey’s Post-hoc test:
+
+
+```{r}
+## Tukey’s Post-hoc test
+chickwts.av <- aov(weight ~ feed, data = chickwts)
+tukeyTest <- TukeyHSD(chickwts.av)
+datatable(tukeyTest$feed )
+```
+
